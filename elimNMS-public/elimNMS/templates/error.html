@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <title>{{ error }}</title>
+    <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon" />
+    <link href="{{ url_for('static', filename='css/error.css') }}" rel="stylesheet" />
+    <link
+      href="{{ url_for('static', filename='lib/bootstrap/css/bootstrap.min.css') }}"
+      rel="stylesheet"
+    />
+    <link
+      href="{{ url_for('static', filename='css/themes/{}.css'.format(current_user.theme or 'default')) }}"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="error-theme">
+    <div class="col-middle">
+      <h1 class="error-number">{{ error }}</h1>
+      {% if error in [401,403] %}
+      <h2>접근 거부</h2>
+      {% if not current_user.is_authenticated %}
+      <p>이 리소스에 액세스하려면 완전한 인증이 필요합니다.</p>
+      <br /><br />
+      <a href="{{ login_url }}"
+        ><button role="button" class="btn btn-secondary">로그인으로 돌아가기</button></a
+      >
+      {% else %}
+      <p>지정된 페이지 또는 리소스에 대한 액세스가 제한되었습니다.</p>
+      <a href="{{ url_for('blueprint.route', page='dashboard') }}"
+        ><button role="button" class="btn btn-secondary">대시보드로 돌아가기</button></a
+      >
+      {% endif %} {% elif error == 500 %}
+      <h2>내부 서버 오류</h2>
+      <p>
+        서버에서 요청을 처리하지 못하도록 하는 예기치 않은 상황이 발생했습니다.
+      </p>
+      {% else %}
+      <h2>죄송하지만 이 페이지를 찾을 수 없습니다</h2>
+      <p>찾으시는 페이지가 존재하지 않습니다.</p>
+      {% endif %}
+    </div>
+  </body>
+</html>

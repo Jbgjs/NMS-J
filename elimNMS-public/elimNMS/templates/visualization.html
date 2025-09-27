@@ -1,0 +1,146 @@
+{% extends "base_site.html" %} {% block title %} 지리적 뷰 {% endblock title %}
+{% block stylesheets %} {{ super() }}
+<link
+  href="{{ url_for('static', filename='lib/leaflet/leaflet.min.css') }}"
+  rel="stylesheet"
+/>
+<link
+  href="{{ url_for('static', filename='lib/leaflet-markercluster/leaflet.markercluster.min.css') }}"
+  rel="stylesheet"
+/>
+<link
+  href="{{ url_for('static', filename='css/visualization.css') }}"
+  rel="stylesheet"
+/>
+{% endblock stylesheets %} {% block content %}
+<form id="search-form-device" class="overlay"></form>
+<form id="search-form-link" class="overlay"></form>
+<div id="map"></div>
+<ul id="contextMenu" oncontextmenu="return false;" class="dropdown-menu" role="menu">
+  <li class="menu dropdown-submenu geo-menu">
+    <a class="menu-submenu" tabindex="-1" href="#"
+      >뷰 유형<span class="caret-right"></span
+    ></a>
+    <ul class="dropdown-menu">
+      <li><a tabindex="-1" href="#">일반</a></li>
+      <li><a tabindex="-1" href="#">클러스터</a></li>
+    </ul>
+  </li>
+  <li class="menu dropdown-submenu geo-menu">
+    <a class="menu-submenu" tabindex="-1" href="#"
+      >타일 레이어<span class="caret-right"></span
+    ></a>
+    <ul class="dropdown-menu">
+      <li><a tabindex="-1" href="#">오픈스트리트맵</a></li>
+      <li><a tabindex="-1" href="#">구글 맵</a></li>
+    </ul>
+  </li>
+  <li class="menu dropdown-submenu geo-menu">
+    <a class="menu-submenu" tabindex="-1" href="#"
+      >마커 유형<span class="caret-right"></span
+    ></a>
+    <ul class="dropdown-menu">
+      <li><a tabindex="-1" href="#">이미지</a></li>
+      <li><a tabindex="-1" href="#">원</a></li>
+      <li><a tabindex="-1" href="#">원 마커</a></li>
+    </ul>
+  </li>
+  <li class="menu rc-object-menu rc-plan-menu rc-device-menu rc-link-menu rc-site-menu">
+    <a tabindex="-1" href="#">속성</a>
+  </li>
+  <li class="menu rc-object-menu rc-device-menu">
+    <a tabindex="-1" href="#">연결</a>
+  </li>
+  <li class="menu rc-object-menu rc-device-menu">
+    <a tabindex="-1" href="#">구성</a>
+  </li>
+  <li class="menu rc-object-menu rc-device-menu">
+    <a tabindex="-1" href="#">결과</a>
+  </li>
+  <li class="menu rc-object-menu rc-device-menu">
+    <a tabindex="-1" href="#">서비스 실행</a>
+  </li>
+</ul>
+<div class="controls">
+  <nav class="navbar navbar-default navbar-custom navbar-color" role="navigation">
+    <div style="margin: 0px;">
+      <select
+        id="current-pool"
+        class="form-control"
+        data-dropdown-align-right="true"
+        data-size="20"
+        data-width="305px"
+      ></select>
+    </div>
+    <ul class="pagination" style="margin: 0px; padding-top: 5px;">
+      <li>
+        <a
+          onclick="action['Edit Pool']()"
+          data-tooltip="풀 편집"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-edit cursor"></span
+        ></a>
+      </li>
+      <li>
+        <a
+          onclick="eNMS.base.showInstancePanel('device', null, 'bulk-filter')"
+          data-tooltip="장치 필터링"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-equalizer"></span
+        ></a>
+      </li>
+      <li>
+        <a
+          onclick="eNMS.base.showInstancePanel('link', null, 'bulk-filter')"
+          data-tooltip="링크 필터링"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-random"></span
+        ></a>
+      </li>
+      <li>
+        <a
+          onclick="eNMS.visualization.displayNetwork({})"
+          data-tooltip="새로고침"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-refresh"></span
+        ></a>
+      </li>
+      <li>
+        <a
+          onclick="eNMS.visualization.clearSearch()"
+          data-tooltip="검색 지우기"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-remove"></span
+        ></a>
+      </li>
+      <li>
+        <a
+          onclick="eNMS.automation.showRunServicePanel({type: 'device'})"
+          data-tooltip="현재 표시된 모든 장치에서 서비스 실행"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-play"></span
+        ></a>
+      </li>
+      <li id="left-arrow">
+        <a
+          onclick="action['Backward']()"
+          data-tooltip="이전 뷰"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-chevron-left"></span
+        ></a>
+      </li>
+      <li id="right-arrow">
+        <a
+          onclick="action['Forward']()"
+          data-tooltip="다음 뷰"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-chevron-right"></span
+        ></a>
+      </li>
+    </ul>
+  </nav>
+</div>
+{% endblock content %} {% block javascripts %} {{ super()}}
+<script src="{{ url_for('static', filename='lib/leaflet/leaflet.min.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/leaflet-markercluster/leaflet.markercluster.min.js') }}"></script>
+{% endblock javascripts %}

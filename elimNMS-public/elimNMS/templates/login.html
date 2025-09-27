@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <title>{{ error }}</title>
+    <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon" />
+    <link
+      href="{{ url_for('static', filename='lib/bootstrap/css/bootstrap.min.css') }}"
+      rel="stylesheet"
+    />
+    <link
+      href="{{ url_for('static', filename='lib/bootstrap-select/bootstrap-select.min.css') }}"
+      rel="stylesheet"
+    />
+    <link href="{{ url_for('static', filename='css/login.css') }}" rel="stylesheet" />
+    <link
+      href="{{ url_for('static', filename='css/themes/{}.css'.format(themes['default'])) }}"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="login">
+    <div class="login_content">
+      <section>
+        <form method="post" autocomplete="off">
+          {{ login_form.csrf_token }}
+          <h1>elimNMS</h1>
+          <label>인증</label>
+          <div>
+            {{ login_form.authentication_method(class="form-control") }}
+          </div>
+          <br />
+          <div>
+            {{ login_form.username(class="form-control required", placeholder="사용자명") }}
+          </div>
+          <div>
+            {{ login_form.password(class="form-control required",
+            placeholder="비밀번호") }}
+          </div>
+          <br />
+          <div>
+            <button type="submit" class="btn btn-primary submit" name="login">
+              로그인
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+    <script src="{{ url_for('static', filename='lib/jquery/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/bootstrap/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/bootstrap-select/bootstrap-select.min.js') }}"></script>
+    <script>
+      $("#authentication_method").selectpicker("refresh");
+    </script>
+  </body>
+</html>

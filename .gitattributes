@@ -1,0 +1,4 @@
+docs/* linguist-vendored
+
+elimNMS/static/lib/* linguist-vendored
+elimNMS/static/fonts/* linguist-vendored

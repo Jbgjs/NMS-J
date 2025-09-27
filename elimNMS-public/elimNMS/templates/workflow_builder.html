@@ -1,0 +1,393 @@
+{% extends "base_site.html" %} {% block title %} 워크플로 빌더 {% endblock title %}
+{% block stylesheets %} {{ super() }}
+<link href="{{ url_for('static', filename='lib/vis/vis.min.css') }}" rel="stylesheet" />
+<link href="{{ url_for('static', filename='css/builder.css') }}" rel="stylesheet" />
+{% endblock stylesheets %} {% block content %}
+<div class="controls">
+  <div class="controls_mode navbar navbar-default navbar-color">
+    <table class="table" cellspacing="0" style="margin: 0px;" width="100%">
+      <tbody>
+        <tr>
+          <td style="text-align: center; vertical-align: middle;">
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="action['Create new service']()"
+              data-tooltip="새 서비스 생성"
+            >
+              <span class="glyphicon glyphicon-plus"></span>
+            </button>
+          </td>
+          <td style="min-width: 200px;">
+            <select
+              id="service-type-dd-list"
+              class="form-control"
+              data-width="200px"
+              data-size="20"
+            ></select>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="eNMS.builder.switchMode()"
+              data-tooltip="모드 변경"
+            >
+              <span id="mode-icon" class="glyphicon glyphicon-move"></span>
+            </button>
+          </td>
+          <td style="min-width: 200px;">
+            <select id="edge-type-dd-list" class="form-control">
+              <option value="success">성공</option>
+              <option value="failure">실패</option>
+            </select>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <nav
+    class="navbar navbar-default navbar-custom navbar-color"
+    style="padding-bottom: 2px;"
+    role="navigation"
+  >
+    <div style="width: 100%; margin: 0px;">
+      <select
+        id="current-workflow"
+        class="form-control"
+        data-dropdown-align-right="true"
+        data-size="20"
+      ></select>
+    </div>
+    <ul class="pagination" style="margin: 0px; padding-top: 10px;">
+      <li>
+        <a
+          onclick="action['Edit workflow']()"
+          data-tooltip="워크플로 편집"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-edit cursor"></span
+        ></a>
+      </li>
+      <li>
+        <a
+          onclick="action['Duplicate workflow']()"
+          data-tooltip="워크플로 복제"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-duplicate"></span
+        ></a>
+      </li>
+      <li>
+        <a
+          onclick="action['Create workflow']()"
+          data-tooltip="최상위 워크플로 생성"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-plus"></span
+        ></a>
+      </li>
+      <li>
+        <a
+          onclick="action['Add to Workflow']()"
+          data-tooltip="워크플로에 추가"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-book"></span
+        ></a>
+      </li>
+      <li>
+        <a
+          onclick="action['Create Label Button']()"
+          data-tooltip="라벨 생성"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-font"></span
+        ></a>
+      </li>
+      <li>
+        <a onclick="action['Skip']()" data-tooltip="건너뛰기" style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-ban-circle"></span
+        ></a>
+      </li>
+      <li>
+        <a onclick="action['Delete']()" data-tooltip="삭제" style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-trash"></span
+        ></a>
+      </li>
+      <li>
+        <a
+          onclick="eNMS.builder.getTree()"
+          data-tooltip="워크플로 트리"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-tree-conifer"></span
+        ></a>
+      </li>
+      <li>
+        <a
+          onclick="eNMS.builder.displayTextSearchField()"
+          data-tooltip="워크플로 검색"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-search"></span
+        ></a>
+      </li>
+      <li>
+        <a onclick="action['Zoom In']()" data-tooltip="확대" style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-zoom-in"></span
+        ></a>
+      </li>
+      <li>
+        <a
+          onclick="action['Zoom Out']()"
+          data-tooltip="축소"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-zoom-out"></span
+        ></a>
+      </li>
+      <li>
+        <a
+          id="export-workflow-btn"
+          onclick="action['Export']()"
+          data-tooltip="워크플로 내보내기"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-export"></span
+        ></a>
+      </li>
+      <li id="left-arrow">
+        <a
+          onclick="action['Backward']()"
+          data-tooltip="이전 워크플로"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-chevron-left"></span
+        ></a>
+      </li>
+      <li id="up-arrow">
+        <a
+          onclick="action['Upward']()"
+          data-tooltip="상위 워크플로로 전환"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-chevron-up"></span
+        ></a>
+      </li>
+      <li id="right-arrow">
+        <a
+          onclick="action['Forward']()"
+          data-tooltip="다음 워크플로"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-chevron-right"></span
+        ></a>
+      </li>
+    </ul>
+    <div
+      id="workflow-search-div"
+      class="input-group"
+      style="width: 100%; margin-bottom: 5px; margin-top: 3px; display: none;"
+    >
+      <input
+        id="workflow-search"
+        type="text"
+        placeholder="&#xF002;"
+        class="form-control"
+        style="font-family: Arial, FontAwesome;"
+      />
+    </div>
+  </nav>
+  <nav
+    class="navbar navbar-default navbar-custom navbar-color"
+    style="padding-bottom: 2px; margin-left: 10px;"
+    role="navigation"
+  >
+    <div style="width: 100%;">
+      <select id="current-runtime" class="form-control" data-size="20"></select>
+    </div>
+    <ul class="pagination" style="margin: 0px; padding-top: 10px;">
+      <li>
+        <a
+          onclick="action['Runtimes Display']()"
+          data-tooltip="개인 또는 모든 런타임"
+          style="cursor: pointer;"
+          ><span id="runtime-display-icon" class="fa fa-user"></span
+        ></a>
+      </li>
+      <li>
+        <a
+          onclick="eNMS.workflowBuilder.filterDevice()"
+          data-tooltip="장치 필터링"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-filter"></span
+        ></a>
+      </li>
+      <li>
+        <a
+          onclick="action['Workflow Logs']()"
+          data-tooltip="로그"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-list"></span
+        ></a>
+      </li>
+      <li>
+        <a
+          onclick="action['Workflow Report']()"
+          data-tooltip="보고서"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-modal-window"></span
+        ></a>
+      </li>
+      <li>
+        <a
+          onclick="action['Workflow Result Tree']()"
+          data-tooltip="결과"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-list-alt"></span
+        ></a>
+      </li>
+      <li>
+        <a
+          onclick="action['Workflow Result Comparison']()"
+          data-tooltip="결과 비교"
+          style="cursor: pointer;"
+          ><span class="fa fa-adjust"></span
+        ></a>
+      </li>
+      <li>
+        <a
+          onclick="action['Run Workflow']()"
+          data-tooltip="워크플로 실행"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-play"></span
+        ></a>
+      </li>
+      <li>
+        <a
+          onclick="action['Parameterized Workflow Run']()"
+          data-tooltip="매개변수 실행"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-play-circle"></span
+        ></a>
+      </li>
+      <li>
+        <a
+          onclick="action['Stop Workflow']()"
+          data-tooltip="워크플로 중지"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-stop"></span
+        ></a>
+      </li>
+    </ul>
+    <div
+      id="device-filter-div"
+      class="input-group table-search"
+      style="width: 100%; margin-bottom: 5px; margin-top: 3px; display: none;"
+    >
+      <select id="device-filter" name="device-filter" style="width: 100%;"></select>
+    </div>
+  </nav>
+</div>
+<div id="builder"></div>
+<ul id="contextMenu" oncontextmenu="return false;" class="dropdown-menu" role="menu">
+  <li class="menu-entry node-selection">
+    <a tabindex="-1" href="#">편집</a>
+  </li>
+  <li class="menu-entry node-selection">
+    <a tabindex="-1" href="#">복제</a>
+  </li>
+  <li class="menu-entry node-selection">
+    <a tabindex="-1" href="#">로그</a>
+  </li>
+  <li class="menu-entry node-selection">
+    <a tabindex="-1" href="#">보고서</a>
+  </li>
+  <li class="menu-entry node-selection">
+    <a tabindex="-1" href="#">결과</a>
+  </li>
+  <li class="menu-entry node-selection workflow-selection">
+    <a tabindex="-1" href="#">워크플로 진입</a>
+  </li>
+  <li class="dropdown-submenu menu-entry node-selection">
+    <a class="menu-submenu" tabindex="-1" href="#"
+      >위치<span class="caret-right"></span
+    ></a>
+    <ul class="dropdown-menu">
+      <li><a tabindex="-1" href="#">수평 정렬</a></li>
+      <li><a tabindex="-1" href="#">수직 정렬</a></li>
+      <li><a tabindex="-1" href="#">수평 분산</a></li>
+      <li><a tabindex="-1" href="#">수직 분산</a></li>
+    </ul>
+  </li>
+  <li class="dropdown-submenu menu-entry node-selection">
+    <a class="menu-submenu" tabindex="-1" href="#"
+      >참조<span class="caret-right"></span
+    ></a>
+    <ul class="dropdown-menu">
+      <li><a tabindex="-1" href="#">서비스 이름</a></li>
+      <li><a tabindex="-1" href="#">최상위 결과</a></li>
+      <li><a tabindex="-1" href="#">장치별 결과</a></li>
+    </ul>
+  </li>
+  <li class="menu-entry divider node-selection">&nbsp</li>
+  <li class="menu-entry node-selection"><a tabindex="-1" href="#">실행</a></li>
+  <li class="menu-entry node-selection">
+    <a tabindex="-1" href="#">매개변수 실행</a>
+  </li>
+  <li class="menu-entry node-selection">
+    <a tabindex="-1" href="#">여기서부터 워크플로 재시작</a>
+  </li>
+  <li class="menu-entry divider node-selection">&nbsp</li>
+  <li class="menu-entry node-selection">
+    <a tabindex="-1" href="#">건너뛰기</a>
+  </li>
+  <li class="menu-entry divider node-selection">&nbsp</li>
+  <li class="menu-entry node-selection edge-selection">
+    <a tabindex="-1" href="#">삭제</a>
+  </li>
+  <li class="menu-entry edge-selection">
+    <a tabindex="-1" href="#">엣지 편집</a>
+  </li>
+  <li class="menu-entry label-selection">
+    <a tabindex="-1" href="#">라벨 편집</a>
+  </li>
+  <li class="menu-entry label-selection">
+    <a tabindex="-1" href="#">삭제</a>
+  </li>
+  <li class="dropdown-submenu menu-entry global">
+    <a class="menu-submenu" tabindex="-1" href="#"
+      >모드 변경<span class="caret-right"></span
+    ></a>
+    <ul class="dropdown-menu">
+      <li><a tabindex="-1" href="#">노드 이동</a></li>
+      <li class="divider"><a tabindex="-1" href="#">&nbsp</a></li>
+      <li><a tabindex="-1" href="#">'성공' 엣지 생성</a></li>
+      <li><a tabindex="-1" href="#">'실패' 엣지 생성</a></li>
+    </ul>
+  </li>
+  <li class="dropdown-submenu menu-entry global">
+    <a class="menu-submenu" tabindex="-1" href="#"
+      >워크플로<span class="caret-right"></span
+    ></a>
+    <ul class="dropdown-menu">
+      <li><a tabindex="-1" href="#">워크플로 편집</a></li>
+      <li><a tabindex="-1" href="#">워크플로 생성</a></li>
+      <li><a tabindex="-1" href="#">워크플로에 추가</a></li>
+      <li class="divider"><a tabindex="-1" href="#">&nbsp</a></li>
+      <li><a tabindex="-1" href="#">워크플로 실행</a></li>
+      <li><a tabindex="-1" href="#">매개변수 워크플로 실행</a></li>
+      <li><a tabindex="-1" href="#">워크플로 중지</a></li>
+      <li class="divider"><a tabindex="-1" href="#">&nbsp</a></li>
+      <li><a tabindex="-1" href="#">워크플로 결과 트리</a></li>
+      <li><a tabindex="-1" href="#">워크플로 결과 테이블</a></li>
+      <li><a tabindex="-1" href="#">워크플로 로그</a></li>
+    </ul>
+  </li>
+  <li class="dropdown-submenu menu-entry global">
+    <a class="menu-submenu" tabindex="-1" href="#"
+      >참조<span class="caret-right"></span
+    ></a>
+    <ul class="dropdown-menu">
+      <li><a tabindex="-1" href="#">워크플로에 연결</a></li>
+      <li><a tabindex="-1" href="#">런타임에 연결</a></li>
+    </ul>
+  </li>
+  <li class="menu-entry global">
+    <a tabindex="-1" href="#">라벨 생성</a>
+  </li>
+</ul>
+{% endblock content %} {% block javascripts %} {{ super()}}
+<script src="{{ url_for('static', filename='lib/vis/vis.min.js') }}"></script>
+{% endblock javascripts %}

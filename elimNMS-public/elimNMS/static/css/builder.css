@@ -1,0 +1,12 @@
+#builder {
+  height: calc(100vh - 80px);
+}
+
+*:focus {
+  outline: none;
+}
+
+li.dropdown-header {
+  color: #050404;
+  font-weight: 550;
+}

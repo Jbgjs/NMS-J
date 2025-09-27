@@ -1,0 +1,239 @@
+{% extends "base_site.html" %} {% block title %} 네트워크 빌더 {% endblock title %} {%
+block stylesheets %} {{ super() }}
+<link href="{{ url_for('static', filename='lib/vis/vis.min.css') }}" rel="stylesheet" />
+<link href="{{ url_for('static', filename='css/builder.css') }}" rel="stylesheet" />
+{% endblock stylesheets %} {% block content %}
+<div class="controls">
+  <div class="controls_mode navbar navbar-default navbar-color">
+    <table class="table" cellspacing="0" style="margin: 0px;" width="100%">
+      <tbody>
+        <tr>
+          <td style="text-align: center; vertical-align: middle;">
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="action['Create new node']()"
+              data-tooltip="새 노드 생성"
+            >
+              <span class="glyphicon glyphicon-plus"></span>
+            </button>
+          </td>
+          <td style="min-width: 150px;">
+            <select
+              id="node-type-dd-list"
+              class="form-control"
+              data-width="150px"
+              data-size="15"
+            ></select>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="eNMS.builder.switchMode()"
+              data-tooltip="모드 변경"
+            >
+              <span id="mode-icon" class="glyphicon glyphicon-move"></span>
+            </button>
+          </td>
+          <td style="min-width: 150px;">
+            <select
+              id="edge-type-dd-list"
+              class="form-control"
+              data-width="150px"
+              data-size="15"
+            ></select>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <nav
+    class="navbar navbar-default navbar-custom navbar-color"
+    style="padding-bottom: 2px;"
+    role="navigation"
+  >
+    <div style="width: 100%; margin: 0px;">
+      <select
+        id="current-network"
+        class="form-control"
+        data-dropdown-align-right="true"
+        data-size="20"
+      ></select>
+    </div>
+    <ul class="pagination" style="margin: 0px; padding-top: 10px;">
+      <li>
+        <a
+          onclick="action['Edit network']()"
+          data-tooltip="네트워크 편집"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-edit cursor"></span
+        ></a>
+      </li>
+      <li>
+        <a
+          onclick="action['Duplicate network']()"
+          data-tooltip="네트워크 복제"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-duplicate"></span
+        ></a>
+      </li>
+      <li>
+        <a
+          onclick="action['Create network']()"
+          data-tooltip="최상위 네트워크 생성"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-plus"></span
+        ></a>
+      </li>
+      <li>
+        <a
+          onclick="action['Add to Network']()"
+          data-tooltip="네트워크에 추가"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-book"></span
+        ></a>
+      </li>
+      <li>
+        <a
+          onclick="action['Create Label Button']()"
+          data-tooltip="라벨 생성"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-font"></span
+        ></a>
+      </li>
+      <li>
+        <a onclick="action['Delete']()" data-tooltip="삭제" style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-trash"></span
+        ></a>
+      </li>
+      <li>
+        <a
+          onclick="eNMS.builder.getTree()"
+          data-tooltip="네트워크 트리"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-tree-conifer"></span
+        ></a>
+      </li>
+      <li>
+        <a
+          onclick="action['Run Service']()"
+          data-tooltip="서비스 실행"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-play"></span
+        ></a>
+      </li>
+      <li>
+        <a
+          onclick="eNMS.builder.displayTextSearchField()"
+          data-tooltip="네트워크 검색"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-search"></span
+        ></a>
+      </li>
+      <li>
+        <a onclick="action['Zoom In']()" data-tooltip="확대" style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-zoom-in"></span
+        ></a>
+      </li>
+      <li>
+        <a
+          onclick="action['Zoom Out']()"
+          data-tooltip="축소"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-zoom-out"></span
+        ></a>
+      </li>
+      <li id="automatic-layout-btn">
+        <a
+          onclick="action['Automatic Layout']()"
+          data-tooltip="자동 레이아웃"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-flash"></span
+        ></a>
+      </li>
+      <li id="left-arrow">
+        <a
+          onclick="action['Backward']()"
+          data-tooltip="이전 네트워크"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-chevron-left"></span
+        ></a>
+      </li>
+      <li id="up-arrow">
+        <a
+          onclick="action['Upward']()"
+          data-tooltip="상위 네트워크로 전환"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-chevron-up"></span
+        ></a>
+      </li>
+      <li id="right-arrow">
+        <a
+          onclick="action['Forward']()"
+          data-tooltip="다음 네트워크"
+          style="cursor: pointer;"
+          ><span class="glyphicon glyphicon-chevron-right"></span
+        ></a>
+      </li>
+    </ul>
+    <div
+      id="network-search-div"
+      class="input-group"
+      style="width: 100%; margin-bottom: 5px; margin-top: 3px; display: none;"
+    >
+      <input
+        id="network-search"
+        type="text"
+        placeholder="&#xF002;"
+        class="form-control"
+        style="font-family: Arial, FontAwesome;"
+      />
+    </div>
+  </nav>
+</div>
+<div id="builder"></div>
+<ul id="contextMenu" class="dropdown-menu" oncontextmenu="return false;" role="menu">
+  <li class="menu-entry node-selection">
+    <a tabindex="-1" href="#">편집</a>
+  </li>
+  <li class="menu-entry node-selection">
+    <a tabindex="-1" href="#">복제</a>
+  </li>
+  <li class="menu-entry node-selection">
+    <a tabindex="-1" href="#">연결</a>
+  </li>
+  <li class="menu-entry node-selection">
+    <a tabindex="-1" href="#">구성</a>
+  </li>
+  <li class="menu-entry node-selection">
+    <a tabindex="-1" href="#">결과</a>
+  </li>
+  <li class="menu-entry node-selection">
+    <a tabindex="-1" href="#">서비스 실행</a>
+  </li>
+  <li class="menu-entry node-selection network-selection">
+    <a tabindex="-1" href="#">네트워크 진입</a>
+  </li>
+  <li class="menu-entry divider node-selection">&nbsp</li>
+  <li class="menu-entry node-selection edge-selection">
+    <a tabindex="-1" href="#">삭제</a>
+  </li>
+  <li class="menu-entry edge-selection">
+    <a tabindex="-1" href="#">엣지 편집</a>
+  </li>
+  <li class="menu-entry label-selection">
+    <a tabindex="-1" href="#">라벨 편집</a>
+  </li>
+  <li class="menu-entry label-selection">
+    <a tabindex="-1" href="#">삭제</a>
+  </li>
+  <li class="menu-entry global">
+    <a tabindex="-1" href="#">라벨 생성</a>
+  </li>
+</ul>
+{% endblock content %} {% block javascripts %} {{ super()}}
+<script src="{{ url_for('static', filename='lib/vis/vis.min.js') }}"></script>
+{% endblock javascripts %}
